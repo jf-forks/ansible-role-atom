@@ -68,7 +68,7 @@ class AtomException(Exception):
 # utils ------------------------------------------------------------------- {{{
 def _create_regex_group(s):
     lines = (line.strip() for line in s.split('\n') if line.strip())
-    chars = filter(None, (line.split('#')[0].strip() for line in lines))
+    chars = [_f for _f in (line.split('#')[0].strip() for line in lines) if _f]
     group = r'[^' + r''.join(chars) + r']'
     return re.compile(group)
 # /utils ------------------------------------------------------------------ }}}
@@ -120,7 +120,7 @@ class Atom(object):
              - os.path.sep
         '''
 
-        if isinstance(path, basestring):
+        if isinstance(path, str):
             return not cls.INVALID_PATH_REGEX.search(path)
 
         try:
@@ -148,7 +148,7 @@ class Atom(object):
             return True
 
         return (
-            isinstance(apm_path, basestring)
+            isinstance(apm_path, str)
             and not cls.INVALID_APM_PATH_REGEX.search(apm_path)
         )
 
@@ -160,7 +160,7 @@ class Atom(object):
             return True
 
         return (
-            isinstance(package, basestring)
+            isinstance(package, str)
             and not cls.INVALID_PACKAGE_REGEX.search(package)
         )
 
@@ -178,7 +178,7 @@ class Atom(object):
             return True
         else:
             return (
-                isinstance(state, basestring)
+                isinstance(state, str)
                 and state.lower() in (
                     'installed',
                     'upgraded',
@@ -224,7 +224,7 @@ class Atom(object):
             raise AtomException(self.message)
 
         else:
-            if isinstance(path, basestring):
+            if isinstance(path, str):
                 self._path = path.split(':')
             else:
                 self._path = path
@@ -290,7 +290,7 @@ class Atom(object):
         self.message = ''
 
     def _setup_instance_vars(self, **kwargs):
-        for key, val in kwargs.iteritems():
+        for key, val in kwargs.items():
             setattr(self, key, val)
 
     def _prep(self):
