@@ -57,6 +57,8 @@ EXAMPLES = '''
 
 import os.path
 import re
+# this is magic, see lib/ansible/module_common.py
+from ansible.module_utils.basic import AnsibleModule
 
 
 # exceptions -------------------------------------------------------------- {{{
@@ -100,9 +102,9 @@ class Atom(object):
         -                   # dashes
     '''
 
-    INVALID_PATH_REGEX        = _create_regex_group(VALID_PATH_CHARS)
-    INVALID_APM_PATH_REGEX    = _create_regex_group(VALID_APM_PATH_CHARS)
-    INVALID_PACKAGE_REGEX     = _create_regex_group(VALID_PACKAGE_CHARS)
+    INVALID_PATH_REGEX = _create_regex_group(VALID_PATH_CHARS)
+    INVALID_APM_PATH_REGEX = _create_regex_group(VALID_APM_PATH_CHARS)
+    INVALID_PACKAGE_REGEX = _create_regex_group(VALID_PACKAGE_CHARS)
     # /class regexes ----------------------------------------------- }}}
 
     # class validations -------------------------------------------- {{{
@@ -316,8 +318,10 @@ class Atom(object):
         if not self.apm_path:
             self.apm_path = None
             self.failed = True
-            self.message = 'Unable to locate Atom package manager (apm) executable.'
-            raise AtomException('Unable to locate Atom package manager (apm) executable.')
+            self.message = 'Unable to locate Atom package manager (apm) ' + \
+                           'executable.'
+            raise AtomException('Unable to locate Atom package manager ' +
+                                '(apm) executable.')
 
         return self.apm_path
 
@@ -375,7 +379,8 @@ class Atom(object):
         ])
 
         if rc == 0:
-            return bool(re.search(re.escape(self.current_package), out, re.MULTILINE | re.IGNORECASE))
+            return bool(re.search(re.escape(self.current_package), out,
+                        re.MULTILINE | re.IGNORECASE))
         else:
             self.failed = True
             self.message = err.strip()
@@ -405,7 +410,8 @@ class Atom(object):
             '--no-confirm',
         ])
         if rc == 0:
-            if re.search(re.escape('(empty)'), out, re.MULTILINE | re.IGNORECASE):
+            if re.search(re.escape('(empty)'), out,
+                         re.MULTILINE | re.IGNORECASE):
                 self.message = 'Atom packages already upgraded.'
 
             else:
@@ -449,7 +455,9 @@ class Atom(object):
         if self._current_package_is_installed():
             self.changed_count += 1
             self.changed = True
-            self.message = 'Package installed: {0}'.format(self.current_package)
+            self.message = 'Package installed: {0}'.format(
+                self.current_package
+            )
             return True
         else:
             self.failed = True
@@ -476,7 +484,8 @@ class Atom(object):
         if not self._current_package_is_installed():
             command = 'install'
 
-        if self._current_package_is_installed() and not self._current_package_is_outdated():
+        if self._current_package_is_installed() and \
+           not self._current_package_is_outdated():
             self.message = 'Package is already upgraded: {0}'.format(
                 self.current_package,
             )
@@ -498,7 +507,8 @@ class Atom(object):
         cmd = [opt for opt in opts if opt]
         rc, out, err = self.module.run_command(cmd)
 
-        if self._current_package_is_installed() and not self._current_package_is_outdated():
+        if self._current_package_is_installed() and \
+           not self._current_package_is_outdated():
             self.changed_count += 1
             self.changed = True
             self.message = 'Package upgraded: {0}'.format(self.current_package)
@@ -548,7 +558,9 @@ class Atom(object):
         if not self._current_package_is_installed():
             self.changed_count += 1
             self.changed = True
-            self.message = 'Package uninstalled: {0}'.format(self.current_package)
+            self.message = 'Package uninstalled: {0}'.format(
+                self.current_package
+            )
             return True
         else:
             self.failed = True
@@ -590,7 +602,7 @@ def main():
         ),
         supports_check_mode=True,
     )
-    p=module.params
+    p = module.params
 
     if p['name']:
         packages = p['name']
@@ -622,8 +634,6 @@ def main():
     else:
         module.exit_json(changed=changed, msg=message)
 
-# this is magic, see lib/ansible/module_common.py
-from ansible.module_utils.basic import *
 
 if __name__ == '__main__':
-  main()
+    main()
